@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maintenance Requests</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        h2 {
+            text-align: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        .status-pending {
+            color: orange;
+            font-weight: bold;
+        }
+        .status-in-progress {
+            color: blue;
+            font-weight: bold;
+        }
+        .status-completed {
+            color: green;
+            font-weight: bold;
+        }
+        .status-rejected {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Maintenance Requests</h2>
+    <button onclick="window.location.href='admin.html'">🔙 Back to Admin Panel</button>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Flat Number</th>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Preferred Date</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody id="requestsTableBody">
+            <!-- Requests will be loaded here -->
+        </tbody>
+    </table>
+
+    <script>
+        const token = localStorage.getItem("adminToken");
+        if (!token) {
+            alert("❌ Admin not logged in! Redirecting to login page.");
+            window.location.href = "admin-login.html";
+        }
+
+        async function fetchRequests() {
+            try {
+                const response = await axios.get('http://localhost:5000/api/requests', {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+
+                const requests = response.data;
+                const tableBody = document.getElementById('requestsTableBody');
+                tableBody.innerHTML = '';
+
+                requests.forEach(request => {
+                    const row = document.createElement('tr');
+
+                    row.innerHTML = `
+                        <td>${request.flatNumber}</td>
+                        <td>${request.title}</td>
+                        <td>${request.description}</td>
+                        <td>${new Date(request.preferredDate).toLocaleDateString()}</td>
+                        <td class="status-${request.status.toLowerCase()}">${request.status}</td>
+                    `;
+
+                    tableBody.appendChild(row);
+                });
+
+            } catch (error) {
+                console.error('❌ Error fetching maintenance requests:', error.response?.data || error.message);
+                alert(`❌ Error: ${error.response?.data?.message || error.message}`);
+            }
+        }
+
+        fetchRequests();
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gated Community - Home</title>
+    <style>
+        /* General styles for both login and home pages */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f7f7f7; /* Soft, neutral background */
+            color: #333; /* Dark text for readability */
+            line-height: 1.6;
+        }
+
+        .container {
+            width: 85%;
+            margin: 0 auto;
+        }
+
+        /* Header styles */
+        .header {
+            background-color: #2c3e50; /* Dark header for a clean, professional feel */
+            padding: 25px 0;
+            color: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header .logo h1 {
+            margin: 0;
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+
+        .nav {
+            text-align: right;
+        }
+
+        .nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .nav ul li {
+            display: inline-block;
+            margin-left: 30px;
+        }
+
+        .nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-size: 18px;
+            font-weight: 500;
+            padding: 6px 10px;
+            border-radius: 4px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .nav ul li a:hover {
+            background-color: #000000; /* Gold accent for hover */
+            color: #fff;
+        }
+
+        /* Welcome Section */
+        .welcome {
+            background-image: url('http://2.bp.blogspot.com/-OB2sDYx6tBc/UCbL8WNDVPI/AAAAAAAABiU/TIkvFHbCNiY/s1600/107.jpg');
+            background-size: cover;
+            background-position: center;
+            padding: 60px 0;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .welcome::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(124, 136, 60, 0.6); /* Dark overlay */
+            filter: blur(8px); /* Apply blur effect */
+            z-index: -1;
+        }
+
+        .welcome h1 {
+            font-size: 40px;
+            color: #031222; /* Gold text to match accent color */
+            font-weight: 900;
+            text-shadow: #679c94;
+            margin-bottom: 20px;
+        }
+
+        .welcome p {
+            font-size: 20px;
+            color: #f1f1f1; /* Light text for readability */
+            margin-bottom: 30px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Features Section */
+        .features {
+            background-color: #ecf0f1; /* Light gray background for contrast */
+            padding: 60px 0;
+            text-align: center;
+        }
+
+        .features h2 {
+            font-size: 34px;
+            color: #2c3e50;
+            margin-bottom: 40px;
+            font-weight: 700;
+        }
+
+        .security, .amenities, .community {
+            display: inline-block;
+            width: 30%;
+            margin: 20px;
+            padding: 30px;
+            background-color: #ffffff; /* Clean white cards */
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .security img, .amenities img, .community img {
+            width: 100%;
+            height: 200px; /* Fixed height for images */
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .security .feature, .amenities .feature, .community .feature {
+            padding-top: 20px;
+        }
+
+        .feature:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .feature h3 {
+            font-size: 22px;
+            color: #34495e;
+            margin-bottom: 15px;
+        }
+
+        .feature p {
+            font-size: 16px;
+            color: #7f8c8d;
+        }
+
+        /* Call to Action Section */
+        .cta {
+            background-color: #2980b9; /* Professional blue */
+            color: white;
+            padding: 50px 0;
+            text-align: center;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .cta h2 {
+            font-size: 36px;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .cta p {
+            font-size: 18px;
+            margin-bottom: 30px;
+            font-weight: 400;
+        }
+
+        .cta a {
+            color: #ffffff;
+            text-decoration: none;
+            background-color: #333;
+            padding: 10px 20px;
+            font-weight: 600;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .cta a:hover {
+            background-color: #000000; /* Gold accent on hover */
+        }
+
+        /* Footer Section */
+        .footer {
+            background-color: #2c3e50;
+            color: white;
+            padding: 25px 0;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .footer p {
+            margin: 0;
+        }
+
+        .footer a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .footer a:hover {
+            color: #000000; /* Hover effect with gold color */
+        }
+
+        /* Additional Media Queries */
+        @media (max-width: 768px) {
+            .nav ul li {
+                margin-left: 20px;
+            }
+
+            .feature {
+                width: 45%;
+            }
+
+            .cta h2 {
+                font-size: 32px;
+            }
+
+            .cta a {
+                padding: 12px 24px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .feature {
+                width: 100%;
+            }
+
+            .cta h2 {
+                font-size: 28px;
+            }
+
+            .nav ul li {
+                display: block;
+                text-align: center;
+                margin-bottom: 10px;
+            }
+
+            .cta a {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Section -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <h1>SMART HIVE</h1>
+            </div>
+            <nav class="nav">
+                <ul>
+                    <li><a href="login.html">Login</a></li>
+                    <li><a href="register.html">Register</a></li>
+                    <li><a href="about.html">About Us</a></li>
+                    <li><a href="services.html">Services</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Welcome Section -->
+    <section class="welcome">
+        <div class="container">
+            <h1>Welcome to Smart Hive</h1>
+            <p>Our gated community offers a peaceful, secure, and luxurious environment to live in. With modern amenities and excellent services, we ensure that all our residents feel at home.</p>
+        </div>
+    </section>
+
+    <!-- Community Features Section -->
+    <section class="features">
+        <div class="container">
+            <h2>Our Community Features</h2>
+            <div class="security">
+                <img src="https://tse2.mm.bing.net/th?id=OIP.pxFUDv04Gn4TW6KfH26AXQHaE9&pid=Api&P=0&h=220" alt="Security">
+                <h3>24/7 Security</h3>
+                <p>Our community is protected by round-the-clock security, ensuring your safety and peace of mind.</p>
+            </div>
+            <div class="amenities">
+                <img src="https://tse3.mm.bing.net/th?id=OIP.FFmF_k-GiHY5Y0ojNgU48gHaD4&pid=Api&P=0&h=220" alt="Amenities">
+                <h3>Modern Amenities</h3>
+                <p>Enjoy access to top-notch facilities such as a fitness center, swimming pool, and walking trails.</p>
+            </div>
+            <div class="community">
+                <img src="https://tse2.mm.bing.net/th?id=OIP.ynraH2k_Enjs2Fo6qkYzxwHaE8&pid=Api&P=0&h=220" alt="Community Events">
+                <h3>Community Events</h3>
+                <p>We host regular events to bring residents together, fostering a sense of belonging and camaraderie.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to Action Section -->
+    <section class="cta">
+        <div class="container">
+            <h2>Ready to Join Us?</h2>
+            <p>If you're interested in becoming part of our community, <a href="register.html">register here</a> or <a href="login.html">log in</a> to access your resident account.</p>
+        </div>
+    </section>
+
+    <!-- Footer Section -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 Gated Community. All rights reserved.</p>
+            <p><a href="privacy.html">Privacy Policy</a> | <a href="terms.html">Terms of Service</a></p>
+        </div>
+    </footer>
+
+</body>
+</html>

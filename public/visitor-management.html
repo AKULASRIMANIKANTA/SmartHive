@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visitor Management</title>
+    <style>
+        /* General Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Body Styling */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6f9;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            width: 250px;
+            background-color: #2c3e50;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            padding: 20px;
+            color: white;
+            box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar-header h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #fff;
+        }
+
+        .nav-links {
+            list-style: none;
+            padding: 0;
+            margin-top: 40px;
+        }
+
+        .nav-links {
+            list-style: none;
+            padding: 0;
+            margin-top: 40px;
+        }
+        
+        .nav-links li {
+            padding: 15px 0;
+            text-align: center;
+            transition: background-color 0.3s ease;
+        }
+        
+        .nav-links li a {
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 20px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        /* Uniform SVG size and spacing */
+        .nav-links li a svg {
+            width: 22px;
+            height: 22px;
+            margin-right: 10px;
+        }
+        
+        /* Active (current page) styling */
+        .nav-links .active {
+            background-color: #2980b9;
+            border-radius: 5px;
+        }
+        
+        /* Hover Effect */
+        .nav-links li a:hover {
+            background-color: #27ae60;
+            border-radius: 5px;
+        }
+
+        /* Main Content Styling */
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            transition: margin-left 0.3s ease;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .header-left h1 {
+            font-size: 28px;
+            color: #2c3e50;
+        }
+
+        .header-right .logout-btn {
+            background-color:  #2c3e50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .header-right .logout-btn:hover {
+            background-color: #c0392b;
+        }
+
+        /* Visitor Management Section */
+        .visitor-management {
+            margin-top: 30px;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .visitor-request h3, .visitor-history h3 {
+            font-size: 24px;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            font-size: 16px;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-group input:focus {
+            border-color: #2980b9;
+        }
+
+        .visitor-request button {
+            background-color: #2980b9;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .visitor-request button:hover {
+            background-color: #3498db;
+        }
+
+        .visitor-history table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .visitor-history th, .visitor-history td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        .visitor-history th {
+            background-color: #f4f6f9;
+            cursor: pointer;
+        }
+
+        .visitor-history td {
+            background-color: #fff;
+        }
+
+        .visitor-history tr:nth-child(even) td {
+            background-color: #f9f9f9;
+        }
+
+        /* Hover Effects */
+        .visitor-history tr:hover {
+            background-color: #ecf0f1;
+        }
+
+        /* Loading Spinner */
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading-spinner.active {
+            display: block;
+        }
+
+        /* Responsiveness */
+        @media (max-width: 768px) {
+            .visitor-request, .visitor-history {
+                padding: 15px;
+            }
+        }
+        /* Incoming Visitor Requests Section */
+        .visitor-requests {
+            width: 100%;
+            margin-top: 20px;
+            padding: 15px;
+            background: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Table Styling */
+        #requestTable {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #requestTable th, #requestTable td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: center;
+        }
+
+        #requestTable th {
+            background: #007bff;
+            color: white;
+            font-weight: bold;
+        }
+
+        #requestTable tbody tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        #requestTable tbody tr:hover {
+            background: #e9ecef;
+        }
+
+        /* Visitor Image */
+        #requestTable img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #3274bbc0;
+        }
+
+        /* Button Styling */
+        .approve-btn, .reject-btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .approve-btn {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .reject-btn {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .approve-btn:hover {
+            background-color: #218838;
+        }
+
+        .reject-btn:hover {
+            background-color: #c82333;
+        }
+
+        /* Responsiveness */
+        @media (max-width: 768px) {
+            .visitor-request, .visitor-history {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar Navigation -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>Gated Community</h2>
+        </div>
+        <ul class="nav-links">
+            <li><a href="home.html"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-house" viewBox="0 0 16 16">
+                <path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5z"/>
+              </svg>&nbsp Home</a></li>
+            <li><a href="profile.html"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-person-fill" viewBox="0 0 16 16">
+                <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
+              </svg>&nbsp Profile</a></li>
+            <li><a href="maintenance.html"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-tools" viewBox="0 0 16 16">
+                <path d="M1 0 0 1l2.2 3.081a1 1 0 0 0 .815.419h.07a1 1 0 0 1 .708.293l2.675 2.675-2.617 2.654A3.003 3.003 0 0 0 0 13a3 3 0 1 0 5.878-.851l2.654-2.617.968.968-.305.914a1 1 0 0 0 .242 1.023l3.27 3.27a.997.997 0 0 0 1.414 0l1.586-1.586a.997.997 0 0 0 0-1.414l-3.27-3.27a1 1 0 0 0-1.023-.242L10.5 9.5l-.96-.96 2.68-2.643A3.005 3.005 0 0 0 16 3q0-.405-.102-.777l-2.14 2.141L12 4l-.364-1.757L13.777.102a3 3 0 0 0-3.675 3.68L7.462 6.46 4.793 3.793a1 1 0 0 1-.293-.707v-.071a1 1 0 0 0-.419-.814zm9.646 10.646a.5.5 0 0 1 .708 0l2.914 2.915a.5.5 0 0 1-.707.707l-2.915-2.914a.5.5 0 0 1 0-.708M3 11l.471.242.529.026.287.445.445.287.026.529L5 13l-.242.471-.026.529-.445.287-.287.445-.529.026L3 15l-.471-.242L2 14.732l-.287-.445L1.268 14l-.026-.529L1 13l.242-.471.026-.529.445-.287.287-.445.529-.026z"/>
+              </svg>&nbsp Maintenance Requests</a></li>
+            <li><a href="amenities-booking.html"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-hospital" viewBox="0 0 16 16">
+                <path d="M8.5 5.034v1.1l.953-.55.5.867L9 7l.953.55-.5.866-.953-.55v1.1h-1v-1.1l-.953.55-.5-.866L7 7l-.953-.55.5-.866.953.55v-1.1zM13.25 9a.25.25 0 0 0-.25.25v.5c0 .138.112.25.25.25h.5a.25.25 0 0 0 .25-.25v-.5a.25.25 0 0 0-.25-.25zM13 11.25a.25.25 0 0 1 .25-.25h.5a.25.25 0 0 1 .25.25v.5a.25.25 0 0 1-.25.25h-.5a.25.25 0 0 1-.25-.25zm.25 1.75a.25.25 0 0 0-.25.25v.5c0 .138.112.25.25.25h.5a.25.25 0 0 0 .25-.25v-.5a.25.25 0 0 0-.25-.25zm-11-4a.25.25 0 0 0-.25.25v.5c0 .138.112.25.25.25h.5A.25.25 0 0 0 3 9.75v-.5A.25.25 0 0 0 2.75 9zm0 2a.25.25 0 0 0-.25.25v.5c0 .138.112.25.25.25h.5a.25.25 0 0 0 .25-.25v-.5a.25.25 0 0 0-.25-.25zM2 13.25a.25.25 0 0 1 .25-.25h.5a.25.25 0 0 1 .25.25v.5a.25.25 0 0 1-.25.25h-.5a.25.25 0 0 1-.25-.25z"/>
+                <path d="M5 1a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1a1 1 0 0 1 1 1v4h3a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h3V3a1 1 0 0 1 1-1zm2 14h2v-3H7zm3 0h1V3H5v12h1v-3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1zm0-14H6v1h4zm2 7v7h3V8zm-8 7V8H1v7z"/>
+              </svg>&nbsp Amenities</a></li>
+            <li><a href="announcements.html"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-megaphone-fill" viewBox="0 0 16 16">
+                <path d="M13 2.5a1.5 1.5 0 0 1 3 0v11a1.5 1.5 0 0 1-3 0zm-1 .724c-2.067.95-4.539 1.481-7 1.656v6.237a25 25 0 0 1 1.088.085c2.053.204 4.038.668 5.912 1.56zm-8 7.841V4.934c-.68.027-1.399.043-2.008.053A2.02 2.02 0 0 0 0 7v2c0 1.106.896 1.996 1.994 2.009l.496.008a64 64 0 0 1 1.51.048m1.39 1.081q.428.032.85.078l.253 1.69a1 1 0 0 1-.983 1.187h-.548a1 1 0 0 1-.916-.599l-1.314-2.48a66 66 0 0 1 1.692.064q.491.026.966.06"/>
+              </svg>&nbsp Community Announcements</a></li>
+            <li><a href="visitor-management.html"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-pass-fill" viewBox="0 0 16 16">
+                <path d="M10 0a2 2 0 1 1-4 0H3.5A1.5 1.5 0 0 0 2 1.5v13A1.5 1.5 0 0 0 3.5 16h9a1.5 1.5 0 0 0 1.5-1.5v-13A1.5 1.5 0 0 0 12.5 0zM4.5 5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1m0 2h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 1 0-1"/>
+              </svg>&nbsp Visitor Management</a></li>
+            <li><a href="settings.html"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-gear-wide-connected" viewBox="0 0 16 16">
+                <path d="M7.068.727c.243-.97 1.62-.97 1.864 0l.071.286a.96.96 0 0 0 1.622.434l.205-.211c.695-.719 1.888-.03 1.613.931l-.08.284a.96.96 0 0 0 1.187 1.187l.283-.081c.96-.275 1.65.918.931 1.613l-.211.205a.96.96 0 0 0 .434 1.622l.286.071c.97.243.97 1.62 0 1.864l-.286.071a.96.96 0 0 0-.434 1.622l.211.205c.719.695.03 1.888-.931 1.613l-.284-.08a.96.96 0 0 0-1.187 1.187l.081.283c.275.96-.918 1.65-1.613.931l-.205-.211a.96.96 0 0 0-1.622.434l-.071.286c-.243.97-1.62.97-1.864 0l-.071-.286a.96.96 0 0 0-1.622-.434l-.205.211c-.695.719-1.888.03-1.613-.931l.08-.284a.96.96 0 0 0-1.186-1.187l-.284.081c-.96.275-1.65-.918-.931-1.613l.211-.205a.96.96 0 0 0-.434-1.622l-.286-.071c-.97-.243-.97-1.62 0-1.864l.286-.071a.96.96 0 0 0 .434-1.622l-.211-.205c-.719-.695-.03-1.888.931-1.613l.284.08a.96.96 0 0 0 1.187-1.186l-.081-.284c-.275-.96.918-1.65 1.613-.931l.205.211a.96.96 0 0 0 1.622-.434zM12.973 8.5H8.25l-2.834 3.779A4.998 4.998 0 0 0 12.973 8.5m0-1a4.998 4.998 0 0 0-7.557-3.779l2.834 3.78zM5.048 3.967l-.087.065zm-.431.355A4.98 4.98 0 0 0 3.002 8c0 1.455.622 2.765 1.615 3.678L7.375 8zm.344 7.646.087.065z"/>
+              </svg>&nbsp Settings</a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <header>
+            <div class="header-left">
+                <h1>Visitor Management</h1>
+            </div>
+            <div class="header-right">
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </header>
+
+        <!-- Visitor Management Section -->
+        <section class="visitor-management">
+            <div class="container">
+                <h2>Manage Visitor Passes</h2>
+
+                <!-- Request a New Visitor Pass -->
+                <div class="visitor-request">
+                    <h3>Request New Visitor Pass</h3>
+                    <form id="visitorForm">
+                        <div class="input-group">
+                            <label for="visitorName">Visitor's Name</label>
+                            <input type="text" id="visitorName" name="visitorName" required />
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="visitorContact">Visitor's Contact</label>
+                            <input type="text" id="visitorContact" name="visitorContact" required />
+                        </div>
+
+                        <div class="input-group">
+                            <label for="visitDate">Date of Visit</label>
+                            <input type="date" id="visitDate" name="visitDate" required />
+                        </div>
+
+                        <div class="input-group">
+                            <label for="visitPurpose">Purpose of Visit</label>
+                            <input type="text" id="visitPurpose" name="visitPurpose" required />
+                        </div>
+
+                        <div class="input-group">
+                            <label for="visitorEmail">Visitor's Email</label>
+                            <input type="email" id="visitorEmail" name="visitorEmail" required />
+                        </div>
+
+                        <div class="input-group">
+                            <label for="flatNumber">Flat Number</label>
+                            <input type="text" id="flatNumber" name="flatNumber" readonly />
+                        </div>  
+                        
+                        <button type="submit">Request Pass</button>
+                    </form>
+                </div>
+
+                <!-- Visitor History Section -->
+                <div class="visitor-history">
+                    <h3>Visitor History</h3>
+                    <table id="visitorTable">
+                        <thead>
+                            <tr>
+                                <th>Visitor Name</th>
+                                <th>Contact</th>
+                                <th>Visit Date</th>
+                                <th>Purpose</th>
+                                <th>flatNumber</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Dynamic Rows will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="visitor-requests">
+                    <h3>Incoming Visitor Requests</h3>
+                    <table id="requestTable">
+                        <thead>
+                            <tr>
+                                <th>Visitor Name</th>
+                                <th>Purpose</th>
+                                <th>Visitor Image</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Dynamic requests will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            let links = document.querySelectorAll(".nav-links li a");
+            let currentPath = window.location.pathname.split("/").pop(); 
+        
+            links.forEach(link => {
+                if (link.getAttribute("href") === currentPath) {
+                    link.classList.add("active");
+                }
+            });
+        });
+        async function fetchUserDetails() {
+            const token = localStorage.getItem("token");
+            if (!token) {
+                alert("⚠️ Please log in first.");
+                window.location.href = "index.html";
+                return;
+            }
+        
+            try {
+                const response = await fetch("http://localhost:5000/api/users/profile", {
+                    headers: { "Authorization": `Bearer ${token}` },
+                });
+        
+                if (!response.ok) throw new Error(`Error: ${response.statusText}`);
+        
+                const user = await response.json();
+                document.getElementById("flatNumber").value = user.flatNumber;  // ✅ Set Flat Number in Input Field
+            } catch (error) {
+                console.error("⚠️ Error fetching user data:", error);
+            }
+        }
+        
+        async function fetchVisitors() {
+            const token = localStorage.getItem("token");
+            if (!token) {
+                console.log("🚨 No token found! Redirecting...");
+                alert("⚠️ Please log in first.");
+                window.location.href = "index.html";
+                return;
+            }
+        
+            console.log("🔍 Fetching visitors...");
+        
+            try {
+                const visitorsResponse = await fetch("http://localhost:5000/api/visitor", {
+                    headers: { "Authorization": `Bearer ${token}` },
+                });
+        
+                if (!visitorsResponse.ok) {
+                    const errorText = await visitorsResponse.text();
+                    throw new Error(`Error ${visitorsResponse.status}: ${errorText}`);
+                }
+        
+                const visitors = await visitorsResponse.json();
+                console.log("✅ Visitors Data:", visitors);
+        
+                const tableBody = document.querySelector("#visitorTable tbody");
+                tableBody.innerHTML = "";
+        
+                visitors.forEach(visitor => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td>${visitor.name}</td>
+                        <td>${visitor.contact}</td>
+                        <td>${new Date(visitor.visitDate).toLocaleDateString()}</td>
+                        <td>${visitor.purpose}</td>
+                        <td>${visitor.flatNumber}</td>
+                        <td>${visitor.status}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+        
+            } catch (error) {
+                console.error("⚠️ Error fetching visitor data:", error);
+            }
+        }
+        
+        async function fetchIncomingRequests() {
+            const userFlatNumber = document.getElementById("flatNumber").value;
+            if (!userFlatNumber) {
+                console.warn("🚨 Flat Number Not Available Yet! Retrying...");
+                setTimeout(fetchIncomingRequests, 2000); // Try again after 2 seconds
+                return;
+            }
+
+            console.log("📡 Fetching Visitor Requests for Flat:", userFlatNumber);
+
+            try {
+                const response = await fetch(`/api/visitor/pending?flatNumber=${userFlatNumber}`);
+                const requests = await response.json();
+                console.log("✅ Incoming Requests:", requests);
+                const tableBody = document.querySelector("#requestTable tbody");
+                tableBody.innerHTML = "";
+        
+                requests.forEach(request => {
+                    tableBody.innerHTML += `
+                        <tr>
+                            <td>${request.name}</td>
+                            <td>${request.purpose}</td>
+                            <td><img src="${request.imageUrl}" width="50"></td>
+                            <td>
+                                <button onclick="approveRequest('${request._id}')">Approve</button>
+                                <button onclick="rejectRequest('${request._id}')">Reject</button>
+                            </td>
+                        </tr>`;
+                });
+            } catch (error) {
+                console.error("Error fetching visitor requests:", error);
+            }
+        }
+        
+        const socket = new WebSocket("ws://localhost:8080");
+        socket.onopen = () => console.log("🔗 WebSocket Connected to Visitor Management");
+        socket.onmessage = (event) => {
+            const notification = JSON.parse(event.data);
+            console.log("🔔 New Notification:", notification.message);
+            alert(notification.message); // Show an alert notification
+        };
+
+        async function approveRequest(id) {
+            await fetch(`/api/visitor/approve/${id}`, { method: "PUT" });
+            socket.send(JSON.stringify({ message: `Visitor ID ${id} approved.` }));
+            fetchIncomingRequests();
+        }
+
+        async function rejectRequest(id) {
+            await fetch(`/api/visitor/reject/${id}`, { method: "PUT" });
+            socket.send(JSON.stringify({ message: `Visitor ID ${id} rejected.` }));
+            fetchIncomingRequests();
+        }  
+        setInterval(fetchIncomingRequests, 5000);
+
+        document.addEventListener("DOMContentLoaded", function () {
+            fetchUserDetails();
+        
+            // Fetch visitors on page load
+            fetchVisitors();
+        
+            // Auto-refresh visitor data every 5 seconds
+            setInterval(fetchVisitors, 5000);
+        
+            // Real-time updates via WebSocket
+            const ws = new WebSocket("ws://localhost:8080");
+            ws.onmessage = function (event) {
+                alert(event.data);
+                fetchVisitors(); // Refresh table when a visitor is approved
+            };
+        
+            // Logout function
+            function logout() {
+                window.location.href = "index.html"; // Redirect to login page
+            }
+        
+            // Attach logout function to button
+            document.querySelector(".logout-btn").addEventListener("click", logout);
+        
+            // Handle visitor pass request submission
+            document.getElementById("visitorForm").addEventListener("submit", function (event) {
+                event.preventDefault();
+        
+                const visitorData = {
+                    name: document.getElementById("visitorName").value,
+                    contact: document.getElementById("visitorContact").value,
+                    visitDate: document.getElementById("visitDate").value,
+                    purpose: document.getElementById("visitPurpose").value,
+                    email: document.getElementById("visitorEmail").value,
+                    flatNumber: document.getElementById("flatNumber").value
+                };
+        
+                fetch("/api/visitor/create", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(visitorData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    fetchVisitors();
+                })
+                .catch(error => console.error("Error submitting visitor request:", error));
+            });
+        });         
+    </script>
+</body>
+</html>

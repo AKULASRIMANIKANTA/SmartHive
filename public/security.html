@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security QR Scanner</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.3/html5-qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f7fa;
+            background-image: url('https://wallpapercave.com/wp/wp2939900.jpg');
+            background-size: cover;
+            background-position: center center;
+            background-attachment: fixed;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        header {
+            background-color: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 20px 0;
+            width: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+
+        header h1 {
+            font-size: 36px;
+            margin: 0;
+            font-weight: bold;
+        }
+
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            margin-top: 100px;
+            width: 90%;
+            max-width: 800px;
+        }
+
+        h2 {
+            color: #2c3e50;
+        }
+
+        #reader {
+            margin: 20px 0;
+            border: 2px solid #dcdcdc;
+            border-radius: 10px;
+            background-color: #f8f8f8;
+            padding: 10px;
+        }
+
+        #scanResult {
+            font-size: 18px;
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        label {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        input {
+            padding: 8px;
+            width: 80%;
+            max-width: 400px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            background-color: #2c3e50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #34495e;
+        }
+
+        video, canvas {
+            border: 2px solid #2c3e50;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #2c3e50;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Security QR Scanner</h1>
+    </header>
+    <div class="container">
+        <h2>QR Scanner</h2>
+        <div id="reader"></div>
+        <p id="scanResult"></p>
+
+        <h2>Visitor Entry</h2>
+        <form id="visitorEntryForm" enctype="multipart/form-data">
+            <label for="visitorName">Visitor Name:</label>
+            <input type="text" id="visitorName" required>
+        
+            <label for="visitPurpose">Purpose of Visit:</label>
+            <input type="text" id="visitPurpose" required>
+        
+            <label for="flatNumber">Flat Number:</label>
+            <input type="text" id="flatNumber" required>
+        
+            <label for="visitorImage">Capture Visitor Image:</label>
+            <video id="video" width="200" height="150" autoplay></video>
+            <button id="capture">Capture</button>
+            <canvas id="canvas" width="200" height="150" style="display:none;"></canvas>
+            <input type="hidden" id="visitorImageData">
+        
+            <button type="submit">Submit Request</button>
+        </form>
+        <h2>Past Visitors</h2>
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Purpose</th>
+                    <th>Flat Number</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="visitorHistoryTable">
+            </tbody>
+        </table>
+    </div>
+    <script>
+        const socket = new WebSocket("ws://localhost:8080");
+        socket.onopen = () => console.log("🔗 WebSocket Connected to Security");
+
+        socket.onmessage = (event) => {
+            const notification = JSON.parse(event.data);
+            console.log("🔔 Security Update:", notification.message);
+            
+            // ✅ Show Alert with Approval/Rejection Result
+            alert(notification.message);
+
+            // ✅ Refresh Visitor History
+            fetchVisitorHistory();
+        };
+        function onScanSuccess(decodedText) {
+            document.getElementById("scanResult").innerText = "Scanning...";
+
+            axios.post('/api/visitor/verify', { qrData: decodedText })
+                .then(response => {
+                    document.getElementById("scanResult").innerText = response.data.message;
+
+                    // Send real-time notification to visitor-management.html
+                    const ws = new WebSocket("ws://localhost:8080");
+                    ws.onopen = () => ws.send(JSON.stringify({ message: response.data.message }));
+                })
+                .catch(error => {
+                    document.getElementById("scanResult").innerText = "Invalid QR Code";
+                });
+        }
+
+        const html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
+        html5QrcodeScanner.render(onScanSuccess);
+        
+        const video = document.getElementById("video");
+        const canvas = document.getElementById("canvas");
+        const captureButton = document.getElementById("capture");
+    
+        // Access the webcam
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then((stream) => { video.srcObject = stream; })
+            .catch((err) => { console.error("Camera access denied:", err); });
+    
+        // Capture Image
+        captureButton.addEventListener("click", () => {
+            const context = canvas.getContext("2d");
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const imageData = canvas.toDataURL("image/png");
+            document.getElementById("visitorImageData").value = canvas.toDataURL("image/png");
+        });
+    
+        document.getElementById("visitorEntryForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            formData.append("name", document.getElementById("visitorName").value);
+            formData.append("purpose", document.getElementById("visitPurpose").value);
+            formData.append("flatNumber", document.getElementById("flatNumber").value);
+            // Convert Base64 to Blob and append to FormData
+            const base64Data = document.getElementById("visitorImageData").value;
+            if (!base64Data) {
+                alert("Please capture an image!");
+                return;
+            }    
+            const byteString = atob(base64Data.split(",")[1]); // Convert Base64 to binary
+            const mimeString = base64Data.split(",")[0].split(":")[1].split(";")[0];
+            const arrayBuffer = new Uint8Array(byteString.length);
+            for (let i = 0; i < byteString.length; i++) {
+                arrayBuffer[i] = byteString.charCodeAt(i);
+            }
+            const blob = new Blob([arrayBuffer], { type: mimeString });
+            formData.append("image", blob, "visitor.png");
+
+            try {
+                const response = await fetch("/api/visitor/unknown", {
+                    method: "POST",
+                    body: formData,
+                });
+                const data = await response.json();
+                alert(data.message);
+            } catch (error) {
+                console.error("Error submitting visitor entry:", error);
+            }
+        });
+        async function fetchVisitorHistory() {
+            try {
+                const response = await fetch("/api/visitor/history");
+                const visitors = await response.json();
+                if (!Array.isArray(visitors)) {
+                    console.error("❌ Expected an array but got:", visitors);
+                    return;
+                }
+                const tableBody = document.getElementById("visitorHistoryTable");
+                tableBody.innerHTML = ""; // Clear existing rows
+    
+                visitors.forEach(visitor => {
+                    tableBody.innerHTML += `
+                        <tr>
+                            <td>${visitor.name}</td>
+                            <td>${visitor.purpose}</td>
+                            <td>${visitor.flatNumber}</td>
+                            <td>${visitor.status}</td>
+                        </tr>`;
+                });
+            } catch (error) {
+                console.error("Error fetching visitor history:", error);
+            }
+        }
+    
+        fetchVisitorHistory();
+    </script>
+</body>
+</html>
